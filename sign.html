@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="./css/login.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!-- Responsive Desktop/Mobile Login form considered to be used as mobile first approach--> 
+<!-- Wave animation credit: https://codepen.io/goodkatz -->
+
+<div class="header">
+
+<!--Content before waves-->
+<div class="inner-header flex">
+<!--Just the logo.. Don't mind this-->
+
+<h3>Sign Up</h3>
+</div>
+
+<!--Waves Container-->
+<div>
+<svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+<defs>
+<path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+</defs>
+<g class="parallax">
+<use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+<use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+<use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+<use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+</g>
+</svg>
+</div>
+<!--Waves end-->
+</div>
+<div id="sign" style="text-align: center; padding:10px"></div>
+<!--Header ends-->
+
+<!--Content starts-->
+<div class="content flex">
+  <form>
+    <input id="signMail" type="text" placeholder="Email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Email'"/>
+    <input id="signName" type="text" placeholder="Username" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Username'"/>
+    <input id="signPass" type="password" placeholder="Password" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Password'"/>
+  </form>
+
+  <button id="action" class="login-btn">Create account</button>
+
+  <div class="bottom-container">
+    <p>Already have an account?</p><a href="./">Log in!</a>
+    <div>
+    
+<!--Content ends-->
+<!-- partial -->
+<script type="text/javascript" src="dependencias\jquery.min.js"></script>
+
+<script>
+
+var conn = new WebSocket('ws://192.168.1.106:8080');
+
+// Attach an error listener to the WebSocket object
+conn.addEventListener('error', function(event) {
+  console.log('WebSocket error:', event);
+  console.log("error occours in conection");
+  window.alert("There was an error in your conection to the server, or the devs forget to turn the server on...");
+});
+
+conn.onmessage = function(e){
+  if (e.data.includes("<!<!<sign>!>!>")) {
+    if(e.data.includes("<!sucess!>")){
+      $("#sign").html("Account created!");
+    } else {
+      $("#sign").html("Email already regstered");
+    }
+  }
+};
+
+  function sign()
+    {
+               var username = document.getElementById("signName").value;
+               var email = document.getElementById("signMail").value;
+               var password =document.getElementById("signPass").value;
+
+               if(username=="" || email=="" || password==""){
+                  $("#sign").html("fill all the fields");
+               } else {
+                  conn.send("<!<!<sign>!>!> <!U-name!>"+username+"<!U-name!> <!pass!>"+password+"<!pass!> <!email!>"+email+"<!email!>");
+               }
+    }
+
+    $("#action").click( function(){
+      sign()
+    });
+
+</script>
+</body>
+</html>
