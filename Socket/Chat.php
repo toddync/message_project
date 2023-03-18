@@ -9,10 +9,6 @@ require("search_and_show_msgs.php");
 require("search_and_show_users.php");
 require("send_msg.php");
 require("add_rel.php");
-require("login.php");
-require("sign.php");
-require("group_creation.php");
-require("msgs_group.php");
 
 
 class Chat implements MessageComponentInterface {
@@ -27,7 +23,12 @@ class Chat implements MessageComponentInterface {
          //echo str_contains("<!<!<action>!>!> <!msg!>oioioioioioi<!msg!>","<!<!<action>!>!>");
          //print_r( explode("<!msg!>","<!<!<usr>!>!> <!msg!>oioioioioioi<!msg!> ") );
         $this->clients = new \SplObjectStorage;
-        $this->mysqli = new mysqli("localhost","root", "", "Message_app");
+
+        $this->mysqli = new mysqli("127.0.0.1",
+        "root",
+        "",
+        "Message_app");
+
     }
 
     public function onOpen(ConnectionInterface $conn) {
@@ -80,8 +81,7 @@ class Chat implements MessageComponentInterface {
 
                 if ($from !== $client) {
                     // The sender is not the receiver, send to each client connected
-                    $client->send("<!<!<usr>!>!>");
-                    echo("s");
+                    $client->send("usr");
                 }
             }
             
@@ -104,9 +104,9 @@ class Chat implements MessageComponentInterface {
 
             if(in_array($to[1], $this->user)){
                 foreach ($this->clients as $client) {
-//echo "---\n";
-                   // print_r($this->user);
-//echo "---\n";
+echo "---\n";
+                    print_r($this->user);
+echo "---\n";
                     //print_r($client);
                     if ( $this->user[$client->resourceId] == $to[1]) {
                         // The receiver is only the intended reciever
@@ -139,53 +139,6 @@ class Chat implements MessageComponentInterface {
             } else {
                 $from -> send("<!<!<relation>!>!> <!sucess!>");
             }
-        } else if (str_contains($msg,"<!<!<login>!>!>") == 1 ) {
-            $email = explode("<!email!>", $msg);
-            $pass = explode("<!pass!>", $msg);
-
-            $truth = login($email[1], $pass[1]);
-
-            if (str_contains($truth,"<!fail mail!>") == 1 ) {
-                $from -> send("<!failed!> <!mail!>"); 
-            } else if (str_contains($truth,"<!fail pass!>") == 1 ) {
-                $from -> send("<!failed!> <!pass!>");
-            } else {
-                $id = explode("<!id!>", $truth);
-                $img = explode("<!img!>", $truth);
-
-                $from -> send("<!passed!> <!id!>".$id[1]."<!id!> <!img!>".$img[1]."<!img!>");
-
-            }
-        } else if (str_contains($msg,"<!<!<sign>!>!>") == 1 ) {
-            $email = explode("<!email!>", $msg);
-            $pass = explode("<!pass!>", $msg);
-            $username = explode("<!U-name!>", $msg);
-
-            $from -> send(signUp($username[1],$email[1], $pass[1]));
-
-        } else if (str_contains($msg,"<!<!<group_create>!>!>") == 1 ) {
-            $user = explode("<!user!>", $msg);
-            $name = explode("<!name!>", $msg);
-
-            $sucsess = Create_group($name[1],$user[1]);
-            $id = explode("<!id!>", $sucsess);
-
-            $response = add_rel($user, $id[1]);
-
-            $from->send("<!<!<usr>!>!>");
-
-        } else if (str_contains($msg,"<!<!<group_msg>!>!>") == 1 ) {
-
-            $search = explode("<!search!>",$msg);
-            $chat = explode("<!chat!>",$msg);
-            $user = explode("<!user!>",$msg);
-
-            
-            $from -> send("<!<!<requested msg>!>!> <!msg!>".msgs_group($search[1], $chat[1], $user[1])."<!msg!>");
-            
-
-        } else if (str_contains($msg,"<!<!<group_remove>!>!>") == 1 ) {
-
         }
     }
 
@@ -197,17 +150,17 @@ class Chat implements MessageComponentInterface {
             echo "Connection {$conn->resourceId} has disconnected\n";
             $query = "UPDATE `chat` SET `Status` = 'offline' WHERE `chat`.`id` = ".$this->user[$conn->resourceId];
             mysqli_query($this->mysqli, $query);
-            }
 
             foreach ($this->clients as $client) {
-                $client->send("<!<!<usr>!>!>");
+                $client->send("usr");
             }
+        }
 
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
         echo "An error has occurred: {$e->getMessage()}\n";
 
-       // $conn->close();
+        $conn->close();
     }
 }

@@ -77,30 +77,20 @@ function users($id){
             $query = "SELECT * FROM (SELECT * FROM mensagens WHERE sender = '".$row1["id"]."' AND reciever = '".$id."' OR sender = '".$id."' AND reciever = '".$row1["id"]."' ORDER BY msg_id DESC LIMIT 1)Var1 ORDER BY msg_id ASC ";
             $lastMsg = mysqli_query($mysqli, $query);
 
-            if($row1["grp"] == "no"){
-                $query = "SELECT * FROM mensagens WHERE sender = '".$row["usr2"]."' AND reciever='".$id."' AND seen = '0'";
-                $temp = mysqli_query($mysqli, $query);
-                $count = mysqli_num_rows($temp);
-                if($count == 0){
-                    $count = "0";
-                    $style = "style='display: none'";
-                } else {
-                    $style = "style='display: none'";
-                    $count = "0";
-                }
-            } else {
+            
+            $query = "SELECT * FROM mensagens WHERE sender = '".$row["usr2"]."' AND reciever='".$id."' AND seen = '0'";
+            $temp = mysqli_query($mysqli, $query);
+            $count = mysqli_num_rows($temp);
+            if($count == 0){
+                $count = "0";
                 $style = "style='display: none'";
-            }
-
-            if($row1["grp"] == "yes"){
-                $group = "group";
             } else {
-                $group = "";
+                $style = "";
             }
 
             $return .= "
             
-            <div onClick='select(".'"'.$row1["id"].'"'.")' data-Username='".$row1["Name"]."' id='usr".$row1["id"]."' class='msg ".$row1["Status"]." $group usr".$row1["id"]."'
+            <div onClick='select(".'"'.$row1["id"].'"'.")' data-Username='".$row1["Name"]."' id='usr".$row1["id"]."' class='msg ".$row1["Status"]." usr".$row1["id"]."'
             data-img='";
             if(isset($row1["Image"])){
                 $return .= $row1["Image"]; 

@@ -10,46 +10,37 @@ function generateRandomString($length = 10) {
     return $randomString;
 }
 */
+ini_set('session.name', 'unique_identifier');
+session_start();
+include('conexao.php');
 
-function login($email, $senha){
-    $mysqli = new mysqli("localhost","root", "", "Message_app");
-
+    $email = $_GET['email'];
+    $senha = $_GET['password'];
     $return = "";
 
+    if(strlen($email) == 0 || strlen($senha) == 0) {
+        echo "Preencha todos os campos!";
+    
+    } else {
 
         $sql = "SELECT * FROM chat WHERE Email = '$email'";
             $consulta = mysqli_query($mysqli, $sql);
                 $coluna = mysqli_fetch_array($consulta);
 
         if (mysqli_num_rows($consulta) == 0){
-
-                $return .=  "<!fail mail!>";
-            $return .= $email;
-                $return .=  "<!fail mail!>";
-
+            $return =  "Cadastro não encontrado!";
+            $_SESSION['email'] = $email;
         } else if ($senha != $coluna["Password"]){
-            $return .= "<!fail pass!>";
+            $return = "Senha incorreta!";
         } else {
-
-                $return .=  "<!id!>";
-            $return .= $coluna["id"];
-                $return .=  "<!id!>";
-
+            $_SESSION['User_Id'] = $coluna["id"];
             if ($coluna["Image"] != ""){
-
-                    $return .=  "<!img!>";
-                $return .= $coluna["Image"];
-                    $return .=  "<!img!>";
-
+                $_SESSION["img"] = $coluna["Image"];
             }else{
-
-                    $return .=  "<!img!>";
-                $return .= "images/default.png";
-                    $return .=  "<!img!>";
-
+                $_SESSION["img"] = "images/default.png";
             }
         }
+    }
 
-    return $return;
-}
+    echo $return;
 ?>

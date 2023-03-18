@@ -1,3 +1,12 @@
+<?php
+ini_set('session.name', 'unique_identifier');
+session_start();
+
+if(!(isset($_SESSION["User_Id"]))){
+ echo "<script>window.location.replace('index.html');</script>";
+}
+
+?>
 
 <!DOCTYPE html>
 <html lang="en" >
@@ -50,7 +59,7 @@
     <path d="M330.518 131.099l-213.825 130.08c-7.387 4.494-5.74 15.711 2.656 17.97l72.009 19.374a9.88 9.88 0 007.703-1.094l32.882-20.003-10.113 37.136a9.88 9.88 0 001.083 7.704l38.561 63.826c4.488 7.427 15.726 5.936 18.003-2.425l65.764-241.49c2.337-8.582-7.092-15.72-14.723-11.078zM266.44 356.177l-24.415-40.411 15.544-57.074c2.336-8.581-7.093-15.719-14.723-11.078l-50.536 30.744-45.592-12.266L319.616 160.91 266.44 356.177z" fill="#fff" /></svg>
   </div>
 
-  <p id='id' class="id"></p>
+  <p class="id">Your Id is: <?php echo $_SESSION["User_Id"]; ?></p>
   <!--<div class="search-bar pc" >
    <input id="search_users" type="text" placeholder="Search users..."/>
   </div>-->
@@ -65,7 +74,7 @@
      <circle cx="12" cy="12" r="3" />
      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" /></svg>
    </div>
-   <img id="user" class="user-profile" src="" alt="" class="account-profile" alt="">
+   <img id="user" data-User-Id="<?php echo $_SESSION["User_Id"]; ?>" class="user-profile" src="<?php echo $_SESSION["img"]; ?>" alt="" class="account-profile" alt="">
   </div>
  </div>
  <div class="wrapper">
@@ -83,8 +92,8 @@
    <input id="search_users" type="text" placeholder="Search users..."  class="pc" />
   </div>
 </div>-->
-
-<div id="users2" class="conversation-area2 mob" style="border:0px; width:60%; height: 100%; margin-right:60%">
+  <div id="users2" class="conversation-area2 mob" style="border:0px; width:60%; height: 100%; margin-rigth:60%">
+  
 </div>
    <!-- MOBILE USERS AREA -->
 

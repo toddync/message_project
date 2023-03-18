@@ -5,6 +5,7 @@
         }
     },
     "require": {
-        "cboden/ratchet": "^0.4"
+        "cboden/ratchet": "^0.4.4",
+        "voku/simple-mysqli": "^8.3"
     }
 }

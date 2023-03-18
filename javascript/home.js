@@ -2,22 +2,16 @@ function encodeHTML(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/>/g, '&gt;');
 }
 
-if(sessionStorage.getItem("id") == null || sessionStorage.getItem("id") == "" || sessionStorage.getItem("id") == "undefined"){
-  window.location.replace("./index.html");
-}
-
-var conn = new WebSocket('ws://192.168.1.106:8080');
+var conn = new WebSocket('ws://127.0.0.1:8080');
 
 // Attach an error listener to the WebSocket object
 conn.addEventListener('error', function(event) {
   console.log('WebSocket error:', event);
   console.log("error ocours in conection");
   $("#error").html("There was an error in your conection to the server, or the devs forget to turn the server on...");
+  // Handle the error here
 });
 
-document.getElementById("id").innerHTML = "Your id is: " + sessionStorage.getItem("id") ;
-document.getElementById("user").setAttribute("data-User-Id",sessionStorage.getItem("id")) ;
-document.getElementById("user").setAttribute("src",sessionStorage.getItem("img")) ;
 
 /*      VANILLA PART      */
 
@@ -114,16 +108,7 @@ function select(id){
 
           when.innerHTML = date + "<span class='new-msgs msgs-"+id+"'" + style + "></span>";
         });
-
-        if(document.getElementsByClassName("usr"+id)[1].classList.contains("group")){
-          conn.send("<!<!<group_msg>!>!> <!search!><!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-          document.getElementById("search").setAttribute("data-grp", "yes");
-          document.getElementById("search2").setAttribute("data-grp", "yes");
-        }else{
-          conn.send("<!<!<request msg>!>!> <!search!><!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-          document.getElementById("search").setAttribute("data-grp", "no");
-          document.getElementById("search2").setAttribute("data-grp", "no");
-        }
+  conn.send("<!<!<request msg>!>!> <!search!><!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
   //console.log('hovered');
   }
 }
@@ -176,7 +161,7 @@ function notification(id) {
 
   conn.onmessage = function(e) {
    // console.log(e.data);
-//console.log(e.data);
+console.log(e.data);
    if(e.data.includes("<!<!<requested msg>!>!>")){
     document.getElementById("result").innerHTML = e.data.split("<!msg!>")[1];
     document.getElementById("loader").style.display = "none";
@@ -211,10 +196,6 @@ function notification(id) {
     }  else {
       $("#usr-data").html("User not found, or you have added this user already...<br><br>");
     }
-
-  } else if(e.data.includes("<!<!<usr>!>!>")){
-console.log(e.data)
-    conn.send("<!id!>"+document.getElementById('user').getAttribute('data-User-Id')+"<!id!> <!<!<requested user>!>!>");
 
   } else if(e.data.includes("<!<!<msg>!>!>")){
 
@@ -376,19 +357,11 @@ var checked = true;
       var user = document.getElementById('user').getAttribute('data-User-Id');
       if(search != '')
       {
-        if(this.getAttribute("data-grp") == "yes"){
-          conn.send("<!<!<group_msg>!>!> <!search!>"+search+"<!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-        } else {
-          conn.send("<!<!<request msg>!>!> <!search!>"+search+"<!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-        }
+        conn.send("<!<!<request msg>!>!> <!search!>"+search+"<!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
       }
       else
       {
-        if(this.getAttribute("data-grp") == "yes"){
-          conn.send("<!<!<group_msg>!>!> <!search!><!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-        } else {
-          conn.send("<!<!<request msg>!>!> <!search!><!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-        }
+        conn.send("<!<!<request msg>!>!> <!search!><!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
       }
       $(this).focus
       });
@@ -399,19 +372,11 @@ var checked = true;
       var user = document.getElementById('user').getAttribute('data-User-Id');
       if(search != '')
       {
-        if(this.getAttribute("grp") == "yes"){
-          conn.send("<!<!<group_msg>!>!> <!search!>"+search+"<!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-        } else {
-          conn.send("<!<!<request msg>!>!> <!search!>"+search+"<!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-        }
+        conn.send("<!<!<request msg>!>!> <!search!>"+search+"<!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
       }
       else
       {
-        if(this.getAttribute("grp") == "yes"){
-          conn.send("<!<!<group_msg>!>!> <!search!><!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-        } else {
-          conn.send("<!<!<request msg>!>!> <!search!><!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
-        }
+        conn.send("<!<!<request msg>!>!> <!search!><!search!> <!user!>"+user+"<!user!> <!chat!>"+id+"<!chat!>");
       }
       $(this).focus
       });
