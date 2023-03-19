@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>CodePen - Mobile / Desktop Animated Login UI</title>
+  <title>Login</title>
   <link rel="stylesheet" href="./css/login.css">
 
 </head>
@@ -60,36 +60,48 @@ viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
 <script type="text/javascript" src="dependencias\jquery.min.js"></script>
 
 <script>
+  var conn = new WebSocket('ws://192.168.1.106:8080');
 
-$(document).ready(function(){
+// Attach an error listener to the WebSocket object
+conn.addEventListener('error', function(event) {
+  console.log('WebSocket error:', event);
+  console.log("error occours in conection");
+  window.alert("There was an error in your conection to the server, or the devs forget to turn the server on...");
+});
+
+conn.onmessage = function(e){
+  if (e.data.includes("<!passed!>")) {
+      sessionStorage.setItem("id", e.data.split("<!id!>")[1]);
+      sessionStorage.setItem("img", e.data.split("<!img!>")[1]);
+      window.location.replace("home.html");
+  } else if (e.data.includes("<!failed!>")) {
+    if(e.data.includes("<!mail!>")){
+      $("#login").html("wrong email");
+    } else {
+      $("#login").html("wrong password");
+    }
+  }
+};
+
 function login()
   {
-    $.ajax({
-    url:"php/login.php",
-    method:"GET",
-    data:{
-              email:document.getElementById("logMail").value,
-              password:document.getElementById("logPass").value
-          },
-    success:function(data)
-    {
-              if(data != ""){
-          $('#login').html("* " + data + " *");
-                  console.log(data);
-              } else {
+             var email = document.getElementById("logMail").value;
+             var password = document.getElementById("logPass").value;
+
+            if(email == "" || password == ""){
+              $("#login").html("fill all the fields");
+            }else{
+              conn.send("<!<!<login>!>!> <!email!>"+email+"<!email!> <!pass!>"+password+"<!pass!>");
+
                   //document.getElementById("login_msg").click();
-                  window.location.replace("home.php");
+                  //window.location.replace("home.php");
                   //console.log("log");
-              }
+             }
     }
-    });
-  }
+  
   $("#log").click(function(){
     login()
   })
-});
-  
-
 </script>
 </body>
 </html>
