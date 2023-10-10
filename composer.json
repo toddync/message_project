@@ -1,0 +1,10 @@
+{
+    "autoload": {
+        "psr-4": {
+            "chat\\": "Socket"
+        }
+    },
+    "require": {
+        "cboden/ratchet": "^0.4"
+    }
+}

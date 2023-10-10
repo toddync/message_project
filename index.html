@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Login</title>
+  <link rel="stylesheet" href="./css/login.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!-- Responsive Desktop/Mobile Login form considered to be used as mobile first approach--> 
+<!-- Wave animation credit: https://codepen.io/goodkatz -->
+
+<div class="header">
+
+<!--Content before waves-->
+<div class="inner-header flex">
+<!--Just the logo.. Don't mind this-->
+
+<h3>Login</h3>
+</div>
+
+<!--Waves Container-->
+<div>
+<svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+<defs>
+<path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+</defs>
+<g class="parallax">
+<use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+<use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+<use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+<use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+</g>
+</svg>
+</div>
+<!--Waves end-->
+
+</div>
+<!--Header ends-->
+
+<!--Content starts-->
+
+<div id="login" style="text-align: center; padding:10px"></div>
+
+<div class="content flex">
+  <form>
+    <input id="logMail" type="text" placeholder="Email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Email'"/>
+    <input id="logPass" type="password" placeholder="Password" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Password'"/>
+  </form>
+    <button id="log" class="login-btn">Login</button>
+  <div class="bottom-container">
+    <p>Not registered with us?</p><a href="sign.html">Sign Up!</a>
+    <div>
+    
+<!--Content ends-->
+<!-- partial -->
+<script type="text/javascript" src="dependencias\jquery.min.js"></script>
+
+<script>
+  var conn = new WebSocket('ws://192.168.1.106:8080');
+
+// Attach an error listener to the WebSocket object
+conn.addEventListener('error', function(event) {
+  console.log('WebSocket error:', event);
+  console.log("error occours in conection");
+  window.alert("There was an error in your conection to the server, or the devs forget to turn the server on...");
+});
+
+conn.onmessage = function(e){
+  if (e.data.includes("<!passed!>")) {
+      sessionStorage.setItem("id", e.data.split("<!id!>")[1]);
+      sessionStorage.setItem("img", e.data.split("<!img!>")[1]);
+      window.location.replace("home.html");
+  } else if (e.data.includes("<!failed!>")) {
+    if(e.data.includes("<!mail!>")){
+      $("#login").html("wrong email");
+    } else {
+      $("#login").html("wrong password");
+    }
+  }
+};
+
+function login()
+  {
+             var email = document.getElementById("logMail").value;
+             var password = document.getElementById("logPass").value;
+
+            if(email == "" || password == ""){
+              $("#login").html("fill all the fields");
+            }else{
+              conn.send("<!<!<login>!>!> <!email!>"+email+"<!email!> <!pass!>"+password+"<!pass!>");
+
+                  //document.getElementById("login_msg").click();
+                  //window.location.replace("home.php");
+                  //console.log("log");
+             }
+    }
+  
+  $("#log").click(function(){
+    login()
+  })
+</script>
+</body>
+</html>
