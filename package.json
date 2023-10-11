@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "var_dump": "^1.0.5"
+  }
+}
