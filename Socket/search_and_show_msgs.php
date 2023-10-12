@@ -9,8 +9,7 @@ function msgs($search, $chat, $user ){
 if ( $search != ""){
     $query = "SELECT * FROM (SELECT * FROM mensagens WHERE message LIKE '%".$search."%' AND sender = '".$chat."' AND reciever = '".$user."' OR message LIKE '%".$search."%' AND sender = '".$user."' AND reciever = '".$chat."' ORDER BY msg_id DESC LIMIT 50)Var1 ORDER BY msg_id ASC ";
 }else{
-    $query = "SELECT * FROM (SELECT * FROM mensagens WHERE sender = '".$chat."' AND reciever='".$user."' OR sender = '".$user."' AND reciever = '".$chat."'  ORDER BY msg_id DESC LIMIT 50)Var1 ORDER BY msg_id ASC ";
-}
+    47117572876
 	$result = mysqli_query($mysqli, $query);
 
     $query = "UPDATE `mensagens` SET `seen` = '1' WHERE `mensagens`.`reciever` = '" . $user . "' AND `mensagens`.`sender` = '". $chat ."'";

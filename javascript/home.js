@@ -2,11 +2,11 @@ function encodeHTML(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/>/g, '&gt;');
 }
 
-if (sessionStorage.getItem("id") == null || sessionStorage.getItem("id") == "" || sessionStorage.getItem("id") == "undefined") {
+/*if (sessionStorage.getItem("id") == null || sessionStorage.getItem("id") == "" || sessionStorage.getItem("id") == "undefined") {
     window.location.replace("./index.html");
-}
+}*/
 
-var conn = new WebSocket('ws://192.168.1.106:8080');
+var conn = new WebSocket(`ws://localhost:4000?id=${1}`);
 
 // Attach an error listener to the WebSocket object
 conn.addEventListener('error', function(event) {
@@ -15,8 +15,8 @@ conn.addEventListener('error', function(event) {
     $("#error").html("There was an error in your conection to the server, or the devs forget to turn the server on...");
 });
 
-document.getElementById("id").innerHTML = "Your id is: " + sessionStorage.getItem("id");
-document.getElementById("user").setAttribute("data-User-Id", sessionStorage.getItem("id"));
+document.getElementById("id").innerHTML = "Your id is: " + sessionStorage.getItem("id") || 1;
+document.getElementById("user").setAttribute("data-User-Id", sessionStorage.getItem("id")) || 1;
 document.getElementById("user").setAttribute("src", sessionStorage.getItem("img"));
 
 /*      VANILLA PART      */
@@ -116,11 +116,15 @@ function select(id) {
         });
 
         if (document.getElementsByClassName("usr"+id)[1].classList.contains("group")) {
-            conn.send({act:"send", ctx:"group_msg", user:user, chat:id});
+            conn.send({
+                act: "request", ctx: "group_msg", user: user, chat: id
+            });
             document.getElementById("search").setAttribute("data-grp", "yes");
             document.getElementById("search2").setAttribute("data-grp", "yes");
         } else {
-            conn.send({act:"request", ctx:"msg", user:user, chat:id});
+            conn.send({
+                act: "request", ctx: "msg", chat: id
+            });
             document.getElementById("search").setAttribute("data-grp", "no");
             document.getElementById("search2").setAttribute("data-grp", "no");
         }
@@ -167,30 +171,25 @@ function notification(id) {
 
 document.getElementById('Adicionar').addEventListener('blur', leave);
 
-
-
-
-conn.onopen = function(e) {
-
-    conn.send({
-        userId: document.getElementById('user').getAttribute('data-User-Id'), act: "register"
-    });
-    conn.send({
-        id: document.getElementById('user').getAttribute('data-User-Id'), act: "request", ctx: "user"
-    });
-
-
-};
+conn.onopen = () => {
+    conn.send(JSON.stringify({
+        act: "request", ctx: "msg", chat: "3"
+    }));
+}
 
 conn.onmessage = function(e) {
-    // console.log(e.data);
+    data = JSON.parse(e.data)
+    console.log(data);
     //console.log(e.data);
-    If(e.data.status === "success") {
+    if (data.status === "success") {
 
-        if (e.data.ctx === "loadChat") {
+        if (data.ctx === "loadChat") {
 
-            e.data.msgs.forEach(msg => {
-                document.getElementById("result").innerHTML += msg;
+            data.msgs.forEach(msg => {
+                console.log(msg, "\n")
+
+                document.getElementById("result").innerHTML += buildMsg(msg, data.reqId);
+
             })
 
             document.getElementById("loader").style.display = "none";
@@ -201,46 +200,48 @@ conn.onmessage = function(e) {
             //document.getElementById("loader").style.display = "none";
             document.getElementById("to_send").focus();
 
-        } else if (e.data.ctx === "userList") {
+        } else if (data.ctx === "userList") {
 
             document.querySelectorAll("users").forEach(usrBox => {
-                e.data.users.forEach(user => {
+                data.users.forEach(user => {
                     usrBox.innerHTML += user;
                 })
             })
 
-        } else if (e.data.act === "response" && e.data.ctx === "msg") {
+        } else if (data.act === "response" && data.ctx === "msg") {
 
-            var id = e.data.msg_id;
-            var id_ = e.data.id;
+            var id = data.msg_id;
+            var id_ = data.id;
 
-            if (e.data.ctxStatus === "success") {
+            if (data.ctxStatus === "success") {
                 console.log(e.data);
                 document.getElementById(id).style.color = "";
                 document.getElementById(id).setAttribute("id", "msg_"+id_);
-            } else if (e.data.ctxStatus === "fail" {
+            } else if (data.ctxStatus === "fail") {
                 document.getElementById(id).style.color = "red";
             }
 
-        } else if (e.data.act === "response" && e.data.ctx === "relation") {
+        } else if (data.act === "response" && e.data.ctx === "relation") {
 
-            if (e.data.ctxStatus === "success"){
-                conn.send({act:"request", ctx:"users", id:document.getElementById('user').getAttribute('data-User-Id')});
+            if (data.ctxStatus === "success") {
+                conn.send({
+                    act: "request", ctx: "users", id: document.getElementById('user').getAttribute('data-User-Id')});
             } else {
                 $("#usr-data").html("User not found, or you have added this user already...<br><br>");
             }
 
-        } else if (e.data.act === "request" && e.data.ctx === "id" ) {
-            console.log(e.data)
-            conn.send({act:"response", ctx:"register", id:document.getElementById('user').getAttribute('data-User-Id')});
+        } else if (data.act === "request" && e.data.ctx === "id") {
+            console.log(data)
+            conn.send({
+                act: "response", ctx: "register", id: document.getElementById('user').getAttribute('data-User-Id')});
 
-        } else if (e.data.act === "recieve" && e.data.ctx === "msg") {
+        } else if (data.act === "recieve" && data.ctx === "msg") {
 
             var result = document.getElementById('result');
 
-            let from = e.data.from;
-            let date = e.data.date;
-            let msg = e.data.msg;
+            let from = data.from;
+            let date = data.date;
+            let msg = data.msg;
             console.log("-----");
             console.log("recieving message: "+msg);
             console.log("from: "+from);
@@ -324,7 +325,9 @@ function add() {
         var date = moment().format('YYYY-MM-DD H:mm:ss');
         var msg_id = moment().format('H:mm:ss');
 
-        conn.send({act:"send", ctx:"msg", msg:msg, to:to, user:id, date:date, msg_date:moment().format("H:mm"), msg_id:msg_id});
+        conn.send({
+            act: "send", ctx: "msg", msg: msg, to: to, user: id, date: date, msg_date: moment().format("H:mm"), msg_id: msg_id
+        });
 
         console.log(msg);
 
@@ -346,7 +349,10 @@ function add_user() {
 
     if (user2 != "0" && user2 != user) {
 
-        conn.send({act:"relation", ctx:"add", {id:user, id:user2}});
+        conn.send({
+            act: "relation", ctx: "add", users: {
+                id: user, id: user2
+            }});
 
         $('#rel').val("");
         $("#usr-data").html("");
@@ -388,12 +394,16 @@ $('#search').keyup(function() {
     var search = $(this).val();
     var id = document.getElementById('result').getAttribute('data-Current-User-Id');
     var user = document.getElementById('user').getAttribute('data-User-Id');
-         
-        if (this.getAttribute("data-grp") == "yes") {
-            conn.send({act:"search", ctx:"group_msg", search:search, user:user, chat:id});
-        } else {
-            conn.send({act:"search", ctx:"msg", search:search, user:user, chat:id});
-        }
+
+    if (this.getAttribute("data-grp") == "yes") {
+        conn.send({
+            act: "search", ctx: "group_msg", search: search, user: user, chat: id
+        });
+    } else {
+        conn.send({
+            act: "search", ctx: "msg", search: search, user: user, chat: id
+        });
+    }
     $(this).focus
 });
 
@@ -408,7 +418,7 @@ $('#search2').keyup(function() {
         });
     } else {
         conn.send({
-            act: "search", ctx"msg", user: user, chat: id, search: search || ""
+            act: "search", ctx: "msg", user: user, chat: id, search: search || ""
         });
     }
 
@@ -454,9 +464,61 @@ function leave() {
     }
 }
 
+function buildMsg(msg, id) {
+    var date = new Date();
+    msg.date = new Date(msg.date);
+
+    if(date == msg.date){
+        if(date.getFullYear() == msg.date.getFullYear){}
+    }
+
+    if (msg.sender == id) {
+
+        var r =`
+
+        <div class='chat-msg owner group'>
+            <div class='chat-msg-profile'>
+                <img class='chat-msg-img' src='images/default.png' alt=''>
+                <div class='chat-msg-date'>${msg.date}</div>
+            </div>
+            <div class='chat-msg-content'>
+                <div id='msg_${msg.id}' class='chat-msg-text'>${msg.message.replace("\n", "<br>")}</div>
+            </div>
+        </div>
+        `;
+        
+        return r;
+    }
+    
+    if (msg.sender != id) {
+        var r = `
+
+        <div class='chat-msg'>
+            <div class='chat-msg-profile'>
+                <img class='chat-msg-img' src='${msg.img}' alt=''>
+                <div class='chat-msg-date'>${msg.date}</div>
+            </div>
+
+            <div class='chat-msg-content'>
+                <span>${msg.username}</span>
+                <div id='${msg.id}' class='chat-msg-text'>${msg.message.replace("\n", "<br>")}</div>
+            </div>
+        </div>
+        `;
+        
+        return r;
+
+    }
 
 
-//load_users2();
+    return " ";
+}
 
 
-//    });
+function get(s){
+    localStorage.getItem(s)
+}
+
+function set(s, v){
+    localStorage.setItem(s, v)
+}

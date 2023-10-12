@@ -1315,6 +1315,17 @@ a.button:after{
   animation-delay: -1s;
 }
 
+.group.midle:nth-child(n){
+    margin: 3px;
+    padding-bottom:3px;
+    
+    .chat-msg-date{
+        display: none;
+    }
+    
+}
+
+
 @keyframes fazer1 {
   0% {
     left: 0;
