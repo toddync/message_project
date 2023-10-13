@@ -3,6 +3,7 @@ const dump = require('var_dump');
 const url = require("node:url")
 
 const message = require("./message.js");
+const user = require("./user.js");
 
 var mysql = require('./db.js');
 mysql = mysql.getSql();
@@ -15,39 +16,43 @@ async function main() {
 
     u[0].forEach(user => {
         users[user.id] = user;
-        dump(user.id)
     })
-
 
     const Server = new Ws.Server({
         port: 4000
     })
 
-    Server.on("connection", (ws, req) => {
+    Server.on("connection", async (ws, req) => {
 
-        var query = url.parse(req.url, true).query;
-        ws.userId = query.id;
+        ws.userId = url.parse(req.url, true).query.id;
         users[ws.userId].Status = 'online';
 
-        mysql.query(`UPDATE chat SET Status='online' WHERE id='${query.id}'`);
+        mysql.query(`UPDATE chat SET Status='online' WHERE id='${ws.userId}'`);
 
-        ws.on("message", (msg, bin) => {
+        Loadusers(ws)
+
+        ws.on("message", msg => {
             msg = JSON.parse(msg.toString('utf8'));
 
-            if (msg.act === "request") {
-                requestHandler(msg, ws, users[msg.chat].Name);
+            switch (msg.act) {
+
+                case "request":
+                    requestHandler(msg, ws, users[msg.chat].Name);
+                    break;
+
             }
 
         });
 
-        ws.on("close",
-            ws => {
 
-                //mysql.query(`UPDATE chat SET Status='offline' WHERE id='${query.id}'`);
+        ws.on("close", ws => {
 
-                //users[ws.userId].Status = 'offline';
+            //mysql.query(`UPDATE chat SET Status='offline' WHERE id='${query.id}'`);
 
-            })
+            //users[ws.userId].Status = 'offline';
+
+        })
+
 
     });
 }
@@ -55,18 +60,52 @@ async function main() {
 main();
 
 
+
 async function requestHandler(req, ws, chat) {
 
     var response;
+    
+    var ctx = req.ctx;
 
-    if (req.ctx === "msg") {
+    switch (ctx) {
 
-        response = await message.getMessageArray(ws.userId, req.chat);
+        case "msg":
 
-        ws.send(JSON.stringify({
-            act: "response", ctx: "loadChat", status: "success", reqId: ws.userId, username: chat, msgs: response
-        }))
+            response = await message.getMessageArray(ws.userId, req.chat);
+            
+            ws.send(JSON.stringify({
+                act: "response", 
+                ctx: "loadChat", 
+                status: "success",
+                reqId: ws.userId, 
+                chat: chat, 
+                msgs: response
+            }))
 
+            break;
+
+        case "user":
+
+            response = await user.getUserArray(ws.userId);
+            
+            ws.send({
+                act:"response",
+                ctx:""
+            });
+
+            break;
     }
 
+}
+
+async function Loadusers(ws){
+    
+    var u = user.getUserArray(ws.userId);
+    
+    ws.send(JSON.stringify({
+            act: "firstLoad",
+            ctx: "user",
+            status: "success",
+            users: u
+    }));
 }

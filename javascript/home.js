@@ -15,9 +15,9 @@ conn.addEventListener('error', function(event) {
     $("#error").html("There was an error in your conection to the server, or the devs forget to turn the server on...");
 });
 
-document.getElementById("id").innerHTML = "Your id is: " + sessionStorage.getItem("id") || 1;
-document.getElementById("user").setAttribute("data-User-Id", sessionStorage.getItem("id")) || 1;
-document.getElementById("user").setAttribute("src", sessionStorage.getItem("img"));
+document.getElementById("id").innerHTML = "Your id is: " + (sessionStorage.getItem("id") || 1);
+document.getElementById("user").setAttribute("data-User-Id", (sessionStorage.getItem("id")) || 1);
+document.getElementById("user").setAttribute("src", (sessionStorage.getItem("img") || "./images/default.png"));
 
 /*      VANILLA PART      */
 
@@ -178,17 +178,18 @@ conn.onopen = () => {
 }
 
 conn.onmessage = function(e) {
-    data = JSON.parse(e.data)
-    console.log(data);
-    //console.log(e.data);
-    if (data.status === "success") {
+    var data = JSON.parse(e.data)
+    //console.log(data);
+    console.log(data.status);
+    console.log(JSON.stringify(data, null, 2))
+    if (data.status == "success") {
 
         if (data.ctx === "loadChat") {
 
             data.msgs.forEach(msg => {
                 console.log(msg, "\n")
 
-                document.getElementById("result").innerHTML += buildMsg(msg, data.reqId);
+                document.getElementById("result").innerHTML += buildMsg(msg, data.reqId, data.chat);
 
             })
 
@@ -464,14 +465,15 @@ function leave() {
     }
 }
 
-function buildMsg(msg, id) {
+function buildMsg(msg, id, chat) {
     var date = new Date();
     msg.date = new Date(msg.date);
 
-    if(date == msg.date){
+  /*  if(date == msg.date){
         if(date.getFullYear() == msg.date.getFullYear){}
     }
-
+  */
+  
     if (msg.sender == id) {
 
         var r =`
@@ -500,7 +502,7 @@ function buildMsg(msg, id) {
             </div>
 
             <div class='chat-msg-content'>
-                <span>${msg.username}</span>
+                <span>${chat}</span>
                 <div id='${msg.id}' class='chat-msg-text'>${msg.message.replace("\n", "<br>")}</div>
             </div>
         </div>
@@ -511,7 +513,7 @@ function buildMsg(msg, id) {
     }
 
 
-    return " ";
+    return "o";
 }
 
 
