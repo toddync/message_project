@@ -1,5 +1,5 @@
 function encodeHTML(s) {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/>/g, '&gt;');
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/>/g, '&gt;').replace(/"/g, '&Prime;').replace(/'/g, '&prime;');
 }
 
 /*if (sessionStorage.getItem("id") == null || sessionStorage.getItem("id") == "" || sessionStorage.getItem("id") == "undefined") {
@@ -10,8 +10,8 @@ var conn = new WebSocket(`ws://localhost:4000?id=${1}`);
 
 // Attach an error listener to the WebSocket object
 conn.addEventListener('error', function(event) {
-    console.log('WebSocket error:', event);
-    console.log("error ocours in conection");
+    //console.log('WebSocket error:', event);
+    //console.log("error ocours in conection");
     $("#error").html("There was an error in your conection to the server, or the devs forget to turn the server on...");
 });
 
@@ -42,7 +42,7 @@ colors.forEach(color => {
         colorns[0].classList.add('selected');
         colorns[1].classList.add('selected');
         localStorage.setItem('color', color.getAttribute('data-color'));
-        //console.log(localStorage.getItem('color'))
+        ////console.log(localStorage.getItem('color'))
     });
 });
 
@@ -122,13 +122,15 @@ function select(id) {
             document.getElementById("search").setAttribute("data-grp", "yes");
             document.getElementById("search2").setAttribute("data-grp", "yes");
         } else {
-            conn.send({
+            
+            conn.send(JSON.stringify({
                 act: "request", ctx: "msg", chat: id
-            });
+            }));
+    
             document.getElementById("search").setAttribute("data-grp", "no");
             document.getElementById("search2").setAttribute("data-grp", "no");
         }
-        //console.log('hovered');
+        ////console.log('hovered');
     }
 }
 /* messages */
@@ -172,22 +174,21 @@ function notification(id) {
 document.getElementById('Adicionar').addEventListener('blur', leave);
 
 conn.onopen = () => {
-    conn.send(JSON.stringify({
+    /*conn.send(JSON.stringify({
         act: "request", ctx: "msg", chat: "3"
-    }));
+    }));*/
 }
 
 conn.onmessage = function(e) {
     var data = JSON.parse(e.data)
-    //console.log(data);
-    console.log(data.status);
-    console.log(JSON.stringify(data, null, 2))
+    
+    ////console.log(JSON.stringify(data, null, 1))
+    
     if (data.status == "success") {
 
         if (data.ctx === "loadChat") {
 
             data.msgs.forEach(msg => {
-                console.log(msg, "\n")
 
                 document.getElementById("result").innerHTML += buildMsg(msg, data.reqId, data.chat);
 
@@ -201,21 +202,25 @@ conn.onmessage = function(e) {
             //document.getElementById("loader").style.display = "none";
             document.getElementById("to_send").focus();
 
-        } else if (data.ctx === "userList") {
-
-            document.querySelectorAll("users").forEach(usrBox => {
+        } else if(data.act == "firstLoad" && data.ctx == "user"){
+            
+            //console.log(JSON.stringify(data, null, 2))
+        
+            document.querySelectorAll(".users").forEach(usrBox => {
+                //console.log("u")
                 data.users.forEach(user => {
-                    usrBox.innerHTML += user;
+                    //console.log("uu")
+                    usrBox.innerHTML += buildUser(user);
                 })
             })
 
-        } else if (data.act === "response" && data.ctx === "msg") {
+        } else if (data.act === "update" && data.ctx === "msg") {
 
-            var id = data.msg_id;
-            var id_ = data.id;
+            var id = data.id;
+            var id_ = data.msg_id;
 
             if (data.ctxStatus === "success") {
-                console.log(e.data);
+                //console.log(e.data);
                 document.getElementById(id).style.color = "";
                 document.getElementById(id).setAttribute("id", "msg_"+id_);
             } else if (data.ctxStatus === "fail") {
@@ -232,7 +237,7 @@ conn.onmessage = function(e) {
             }
 
         } else if (data.act === "request" && e.data.ctx === "id") {
-            console.log(data)
+            //console.log(data)
             conn.send({
                 act: "response", ctx: "register", id: document.getElementById('user').getAttribute('data-User-Id')});
 
@@ -243,10 +248,10 @@ conn.onmessage = function(e) {
             let from = data.from;
             let date = data.date;
             let msg = data.msg;
-            console.log("-----");
-            console.log("recieving message: "+msg);
-            console.log("from: "+from);
-            console.log("-----");
+            //console.log("-----");
+            //console.log("recieving message: "+msg);
+            //console.log("from: "+from);
+            //console.log("-----");
             //  notification(from);
 
 
@@ -305,7 +310,7 @@ conn.onmessage = function(e) {
     }
 };
 
-//console.log(e.message);
+////console.log(e.message);
 
 
 
@@ -324,17 +329,35 @@ function add() {
         var to = document.getElementById('result').getAttribute('data-Current-User-id');
         var id = document.getElementById('user').getAttribute('data-User-Id');
         var date = moment().format('YYYY-MM-DD H:mm:ss');
-        var msg_id = moment().format('H:mm:ss');
+        var msg_id = new Date().getTime();
 
-        conn.send({
-            act: "send", ctx: "msg", msg: msg, to: to, user: id, date: date, msg_date: moment().format("H:mm"), msg_id: msg_id
-        });
-
-        console.log(msg);
-
+        conn.send(JSON.stringify({
+            act: "send",
+            ctx: "msg",
+            msg: msg,
+            to: to,
+            user: id,
+            date: date,
+            msg_date: moment().format("H:mm"),
+            msg_id: msg_id
+        }));
 
         msg = msg.replace(/\n/g, "<br>");
-        document.getElementById('result').innerHTML += "<div class='chat-msg owner'><div class='chat-msg-profile'><img class='chat-msg-img' src='images/default.png' alt=''><div class='chat-msg-date'>" + moment().format('H:mm') +"</div></div><div class='chat-msg-content'><div class='chat-msg-text' style='color: gray' id='"+msg_id+"'>" + msg + "</div></div></div>";
+        document.getElementById('result').innerHTML += `
+            <div class='chat-msg owner'>
+                <div class='chat-msg-profile'>
+                    <img class='chat-msg-img' src='images/default.png' alt=''>
+                    <div class='chat-msg-date'>
+                        ${timeSince(new Date(), "msg")}
+                    </div>
+                </div>
+                <div class='chat-msg-content'>
+                    <div class='chat-msg-text' style='color: lightgray' id='${msg_id}'>
+                        ${msg}
+                    </div>
+                </div>
+            </div>`;
+            
         var objDiv = document.getElementById('result');
         objDiv.scrollTop = objDiv.scrollHeight;
     }
@@ -388,7 +411,7 @@ function check() {
         gr.style.display = "none";
         checked = true;
     }
-    console.log(checked);
+    //console.log(checked);
 }
 
 $('#search').keyup(function() {
@@ -468,6 +491,7 @@ function leave() {
 function buildMsg(msg, id, chat) {
     var date = new Date();
     msg.date = new Date(msg.date);
+    msg.date = timeSince(msg.date, "msg");
 
   /*  if(date == msg.date){
         if(date.getFullYear() == msg.date.getFullYear){}
@@ -475,16 +499,14 @@ function buildMsg(msg, id, chat) {
   */
   
     if (msg.sender == id) {
-
         var r =`
-
         <div class='chat-msg owner group'>
             <div class='chat-msg-profile'>
                 <img class='chat-msg-img' src='images/default.png' alt=''>
                 <div class='chat-msg-date'>${msg.date}</div>
             </div>
             <div class='chat-msg-content'>
-                <div id='msg_${msg.id}' class='chat-msg-text'>${msg.message.replace("\n", "<br>")}</div>
+                <div id='msg_${msg.msg_id}' class='chat-msg-text'>${msg.message.replace("\n", "<br>")}</div>
             </div>
         </div>
         `;
@@ -492,28 +514,45 @@ function buildMsg(msg, id, chat) {
         return r;
     }
     
-    if (msg.sender != id) {
         var r = `
-
         <div class='chat-msg'>
             <div class='chat-msg-profile'>
                 <img class='chat-msg-img' src='${msg.img}' alt=''>
                 <div class='chat-msg-date'>${msg.date}</div>
             </div>
-
             <div class='chat-msg-content'>
-                <span>${chat}</span>
-                <div id='${msg.id}' class='chat-msg-text'>${msg.message.replace("\n", "<br>")}</div>
+                <span class='username'>${chat}</span>
+                <div id='${msg.msg_id}' class='chat-msg-text'>${msg.message.replace("\n", "<br>")}</div>
             </div>
         </div>
         `;
         
         return r;
+}
 
-    }
-
-
-    return "o";
+function buildUser(user){
+    var date = timeSince(user.lastMsg.date)
+    var r = `
+            <div onClick='select(${user.id})' data-Username='${user.Name}' id='usr${user.id}' class='msg ${status} ${user.group} usr${user.id}' data-img='${user.Image || "./imagens/default.png"}'>
+                <img class='msg-profile' src='${user.Image}' alt='' />
+                <div class='msg-detail'>
+                    <div class='msg-username'>${user.Name}</div>
+                        <div class='msg-content'>
+                            <span class='msg-message usr".$row1["id"]."-cont'>${ user.lastMsg.sender == user.id ? user.lastMsg.message : "You: " + user.lastMsg.message}</span>
+                            <span class='msg-date usr${user.id}-date' data-date='${date}' data-count='${user.unseen}' >${date}
+                                <span style='${user.unseen > 0 ? "" : "display:none"}' class='new-msgs msg-${user.id}'>${user.unseen}</span>
+                            </span>
+                    </div>
+                </div>
+        </div>`;
+        
+        return r;
+    /*
+    $return .= "
+    <button class='add' data-bs-toggle='offcanvas' data-bs-target='#add'></button>
+    <div class='overlay'></div>
+    ";
+    */
 }
 
 
@@ -521,6 +560,42 @@ function get(s){
     localStorage.getItem(s)
 }
 
+
 function set(s, v){
     localStorage.setItem(s, v)
+}
+
+
+function timeSince(date, msg){
+    
+    if (!msg){
+        
+        let now = new Date().getTime();
+        let msgTime = new Date(date).getTime();
+        date = new Date(date)
+    
+        var s = Math.floor( ( now - msgTime ) / 1000 );
+        var m = Math.floor( s / 60 );
+        var h = Math.floor( m / 60 );
+        var d = Math.floor( h / 24 );
+        
+        if(d > 1){
+            
+            return date.toLocaleString('en-GB').split(",")[0];
+            
+        } else {
+            
+            let h = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours();
+            let m = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes();
+        
+            return h == 24 ? "ontem" : `${h}:${m}`;
+        }
+        
+    } else {
+        
+        let h = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours();
+        let m = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes();
+        
+        return h+":"+m;
+    }
 }
