@@ -2,8 +2,7 @@ const Ws = require("ws");
 const dump = require('var_dump');
 const url = require("node:url")
 
-const message = require("./message.js");
-const user = require("./user.js");
+const handlers = require("./handlers.js")
 
 var mysql = require('./db.js');
 mysql = mysql.getSql();
@@ -32,15 +31,15 @@ async function main() {
 
     Server.on("connection", async (ws, req) => {
 
-        ws.userId = url.parse(req.url, true).query.id;
-        users[ws.userId][0].Status = 'online';
-        users[ws.userId][1] = ws
-        
-        //console.log(users[ws.userId][1].userId);
+        if(url.parse(req.url, true).query.id){
+            ws.userId = url.parse(req.url, true).query.id;
+            users[ws.userId][0].Status = 'online';
+            users[ws.userId][1] = ws
 
-        mysql.query(`UPDATE chat SET Status='online' WHERE id='${ws.userId}'`);
+            mysql.query(`UPDATE chat SET Status='online' WHERE id='${ws.userId}'`);
+            Loadusers(ws)
+        }
 
-        Loadusers(ws)
 
         ws.on("message", msg => {
             msg = JSON.parse(msg.toString('utf8'));
@@ -49,39 +48,38 @@ async function main() {
 
                 case "request":
                     
-                    requestHandler(msg, ws, users[msg.chat][0].Name);
+                    handlers.requestHandler(msg, ws, users[msg.chat][0].Name);
                 break;
                 
                 case "send":
-                   
-                    //console.log(msg.to)
-                    //console.log(JSON.stringify(users[msg.to][1]))
                     
                     if (users[msg.to][1]){
                         
                         var to = users[msg.to][1];
                         var isConn = true;
-                    } else {
-                        
-                        var to = msg.to;
-                        var isConn = false;
                     }
                     
-                    messageHandler(msg, ws, to, isConn)
+                    handlers.messageHandler(msg, ws, to || false, isConn || false)
+                break
+                
+                case "register":
+                    
+                    handlers.registerHandler(msg, ws)
+                break
             }
 
         });
 
 
-        ws.on("close", ws => {
-
-            //mysql.query(`UPDATE chat SET Status='offline' WHERE id='${query.id}'`);
-
-            //users[ws.userId].Status = 'offline';
+        ws.on("close", () => {
+            
+            if(ws.userId){
+                mysql.query(`UPDATE chat SET Status='offline' WHERE id='${ws.userId}'`);
+                
+                users[ws.userId].Status = 'offline';
+            }
 
         })
-
-
     });
     
     console.log("Server running on port 4000!")
@@ -89,66 +87,6 @@ async function main() {
 
 main();
 
-
-
-async function requestHandler(req, ws, chat) {
-
-    var response;
-    
-    var ctx = req.ctx;
-
-    switch (ctx) {
-        
-        case "msg":
-            
-            response = await message.getMessageArray(ws.userId, req.chat, 50);
-            
-            ws.send(JSON.stringify({
-                act: "response", 
-                ctx: "loadChat", 
-                status: "success",
-                reqId: ws.userId, 
-                chat: chat, 
-                msgs: response
-            }))
-            
-        break;
-        
-        case "user":
-            
-            response = await user.getUserArray(ws.userId);
-            
-            ws.send({
-                act:"response",
-                ctx:""
-            });
-            
-        break;
-    }
-
-}
-
-async function messageHandler(msg, from, to, conn){
-    
-    if (conn){
-        
-        var u = await message.sendMessage(msg)
-    } else {
- 
-        var u = await message.sendMessage(msg)
-        
-        if(u){
-            from.send(JSON.stringify({
-               act:"update",
-               ctx:"msg",
-               status:"success",
-               msg_id:u,
-               id:msg.msg_id,
-               ctxStatus:"success"
-            }));
-        }
-    }
-}
 
 async function Loadusers(ws){
     
@@ -159,7 +97,5 @@ async function Loadusers(ws){
         ctx:    "user",
         status: "success",
         users:  u
-     
     }));
-    
 }

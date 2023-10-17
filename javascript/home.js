@@ -2,11 +2,13 @@ function encodeHTML(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/>/g, '&gt;').replace(/"/g, '&Prime;').replace(/'/g, '&prime;');
 }
 
-/*if (sessionStorage.getItem("id") == null || sessionStorage.getItem("id") == "" || sessionStorage.getItem("id") == "undefined") {
+/*if (!sessionStorage.getItem("id")) {
     window.location.replace("./index.html");
 }*/
 
-var conn = new WebSocket(`ws://localhost:4000?id=${1}`);
+var id = sessionStorage.getItem("id") || 1
+
+var conn = new WebSocket(`${socket}?id=${id}`);
 
 // Attach an error listener to the WebSocket object
 conn.addEventListener('error', function(event) {
