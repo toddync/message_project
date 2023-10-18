@@ -105,8 +105,53 @@ async function login(req, ws){
     }
 }
 
+async function addRelation(req, ws){
+    
+    let c = await mysql.query(`SELECT * FROM chat WHERE id = '${req.id2}'`);
+
+    let c2 = await mysql.query(`
+        SELECT * FROM users_relation 
+            WHERE 
+                usr1= '${req.id}' AND usr2= '${req.id2}'
+        `);
+
+    if (c[0].length > 0 && c2[0].length == 0){
+        
+        await mysql.query(`
+            INSERT INTO 
+                users_relation (usr1, usr2)
+            VALUES 
+                ('${req.id}', '${req.id2}'),
+                ('${req.id2}', '${req.id}')`
+        );
+        
+        let r = await mysql.query(`
+            SELECT 
+                Name, Status, grp, Image, id
+            FROM chat
+            WHERE
+                id=${req.id}`)
+        
+        ws.send(JSON.stringify({
+            act:"relation",
+            ctx:"add",
+            status:"success",
+            user: r[0]
+        }))
+        
+    } else {
+        
+        ws.send(JSON.stringify({
+            act: "relation",
+            ctx: "add",
+            status:"fail"
+        }))
+    }
+}
+
 module.exports = {
     getUserArray: getUserArray,
     sign: sign,
-    login: login
+    login: login,
+    addRelation: addRelation
 };

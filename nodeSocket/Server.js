@@ -15,6 +15,7 @@ async function main() {
     u[0].forEach(user => {
         users[user.id] = []
         users[user.id][0] = user;
+        console.log(user.id, user.Name)
     })
 
     const Server = new Ws.Server({
@@ -36,29 +37,7 @@ async function main() {
         ws.on("message", msg => {
             msg = JSON.parse(msg.toString('utf8'));
 
-            switch (msg.act) {
-
-                case "request":
-                    
-                    handlers.requestHandler(msg, ws, users[msg.chat][0]);
-                break;
-                
-                case "send":
-                    
-                    if (users[msg.to][1]){
-                        
-                        var to = users[msg.to][1];
-                        var isConn = true;
-                    }
-                    
-                    handlers.messageHandler(msg, ws, to || false, isConn || false)
-                break
-                
-                case "register":
-                    
-                    handlers.registerHandler(msg, ws)
-                break
-            }
+            handlers.handle(msg, users, ws);
 
         });
 

@@ -1,6 +1,41 @@
 const message = require("./message.js");
 const user = require("./user.js");
 
+
+async function handle(msg, users, ws){
+    
+    switch (msg.act) {
+
+        case "request":
+           
+            requestHandler(msg, ws, users[msg.chat][0]);
+        break;
+          
+        case "send":
+         
+            if (users[msg.to][1]){
+             
+                var to = users[msg.to][1];
+                var isConn = true;
+            }
+            
+            messageHandler(msg, ws, to || false, isConn || false)
+        break
+       
+        case "register":
+           
+            registerHandler(msg, ws)
+        break
+        
+        case "relation":
+            
+            if(msg.ctx == "add"){
+                user.addRelation(msg, ws)
+            }
+    }
+}
+
+
 async function requestHandler(req, ws, chat) {
 
     var response;
@@ -11,7 +46,7 @@ async function requestHandler(req, ws, chat) {
         case "msg":
             
             response = await message.getMessageArray(ws.userId, req.chat, 50);
-            console.log(chat.Image)
+            
             ws.send(JSON.stringify({
                 act: "response", 
                 ctx: "loadChat", 
@@ -30,9 +65,9 @@ async function requestHandler(req, ws, chat) {
             
             ws.send({
                 act:"response",
-                ctx:""
+                ctx:"loadUsers",
+                status:"success"
             });
-            
         break;
     }
 
@@ -82,7 +117,5 @@ async function registerHandler (req, ws){
 
 
 module.exports = {
-    messageHandler: messageHandler,
-    requestHandler: requestHandler,
-    registerHandler: registerHandler
+    handle: handle
 }

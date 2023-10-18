@@ -1,1 +1,1 @@
-const socket = `ws://127.0.0.1:4000`
+const socket = `ws://localhost:4000`

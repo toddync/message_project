@@ -184,7 +184,7 @@ conn.onopen = () => {
 conn.onmessage = function(e) {
     var data = JSON.parse(e.data)
     
-    ////console.log(JSON.stringify(data, null, 1))
+    console.log(data)
     
     if (data.status == "success") {
 
@@ -214,6 +214,11 @@ conn.onmessage = function(e) {
                     //console.log("uu")
                     usrBox.innerHTML += buildUser(user);
                 })
+                
+                usrBox.innerHTML += `
+                    <button class='add' data-bs-toggle='offcanvas' data-bs-target='#add'></button>
+                    <div class='overlay'></div>
+                `;
             })
 
         } else if (data.act === "update" && data.ctx === "msg") {
@@ -375,10 +380,12 @@ function add_user() {
 
     if (user2 != "0" && user2 != user) {
 
-        conn.send({
-            act: "relation", ctx: "add", users: {
-                id: user, id: user2
-            }});
+        conn.send(JSON.stringify({
+            act: "relation",
+            ctx: "add",
+            id: user,
+            id2: user2
+        }));
 
         $('#rel').val("");
         $("#usr-data").html("");
@@ -533,14 +540,20 @@ function buildMsg(msg, id, chat, img) {
 }
 
 function buildUser(user){
-    var date = timeSince(user.lastMsg.date)
+    var date = user.lastMsg ? timeSince(user.lastMsg.date) : ""
+    let sender = ""
+    
+    if(date){
+        let sender = user.lastMsg.sender == user.id ? user.lastMsg.message : "You: " + user.lastMsg.messag
+    }
+   
     var r = `
             <div onClick='select(${user.id})' data-Username='${user.Name}' id='usr${user.id}' class='msg ${status} ${user.group} usr${user.id}' data-img='${user.Image || "./imagens/default.png"}'>
                 <img class='msg-profile' src='${user.Image}' alt='' />
                 <div class='msg-detail'>
                     <div class='msg-username'>${user.Name}</div>
                         <div class='msg-content'>
-                            <span class='msg-message usr".$row1["id"]."-cont'>${ user.lastMsg.sender == user.id ? user.lastMsg.message : "You: " + user.lastMsg.message}</span>
+                            <span class='msg-message usr".$row1["id"]."-cont'>${sender}</span>
                             <span class='msg-date usr${user.id}-date' data-date='${date}' data-count='${user.unseen}' >${date}
                                 <span style='${user.unseen > 0 ? "" : "display:none"}' class='new-msgs msg-${user.id}'>${user.unseen}</span>
                             </span>
@@ -548,27 +561,8 @@ function buildUser(user){
                 </div>
         </div>`;
         
-        console.log(r.Image)
-        
-        return r;
-    /*
-    $return .= "
-    <button class='add' data-bs-toggle='offcanvas' data-bs-target='#add'></button>
-    <div class='overlay'></div>
-    ";
-    */
+        return r
 }
-
-
-function get(s){
-    localStorage.getItem(s)
-}
-
-
-function set(s, v){
-    localStorage.setItem(s, v)
-}
-
 
 function timeSince(date, msg){
     
