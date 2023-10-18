@@ -6,7 +6,7 @@ const message = require("./message.js");
 async function getUserArray(id) {
   
    var r = await mysql.query(`
-        SELECT Name, Status, grp, Image
+        SELECT Name, Status, grp, Image, id
         FROM chat
         INNER JOIN users_relation ON chat.id = users_relation.usr2
         WHERE users_relation.usr1 = ${id};`);
@@ -32,10 +32,17 @@ async function getUserArray(id) {
 async function finalize(id, r){
     
     for(let i = 0; i < r[0].length; i++){
-     
-       var resp = await message.getMessageArray(id, r[0][i].id, 1)
-       r[0][i].lastMsg = resp[0];
-       r[0][i].unseen = await message.getUnseen(id, r[0][i].id)
+        
+        if(r[0][i]){
+            
+            var resp = await message.getMessageArray(id, r[0][i].id, 1)
+            r[0][i].lastMsg = resp[0];
+            r[0][i].unseen = await message.getUnseen(id, r[0][i].id)
+        } else {
+            
+            r[0][i].lastMsg = "";
+            r[0][i].unseen = 0
+        }
     }
     
     return r;

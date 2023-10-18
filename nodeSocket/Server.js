@@ -1,19 +1,11 @@
 const Ws = require("ws");
-const dump = require('var_dump');
 const url = require("node:url")
 
 const handlers = require("./handlers.js")
+const user = require("./user.js")
 
 var mysql = require('./db.js');
 mysql = mysql.getSql();
-
-
-const v8 = require('v8');
-
-const structuredClone = obj => {
-  return v8.deserialize(v8.serialize(obj));
-};
-
 
 async function main() {
 
@@ -48,7 +40,7 @@ async function main() {
 
                 case "request":
                     
-                    handlers.requestHandler(msg, ws, users[msg.chat][0].Name);
+                    handlers.requestHandler(msg, ws, users[msg.chat][0]);
                 break;
                 
                 case "send":

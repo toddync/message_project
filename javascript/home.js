@@ -192,7 +192,7 @@ conn.onmessage = function(e) {
 
             data.msgs.forEach(msg => {
 
-                document.getElementById("result").innerHTML += buildMsg(msg, data.reqId, data.chat);
+                document.getElementById("result").innerHTML += buildMsg(msg, data.reqId, data.chat, data.img);
 
             })
 
@@ -490,7 +490,7 @@ function leave() {
     }
 }
 
-function buildMsg(msg, id, chat) {
+function buildMsg(msg, id, chat, img) {
     var date = new Date();
     msg.date = new Date(msg.date);
     msg.date = timeSince(msg.date, "msg");
@@ -519,7 +519,7 @@ function buildMsg(msg, id, chat) {
         var r = `
         <div class='chat-msg'>
             <div class='chat-msg-profile'>
-                <img class='chat-msg-img' src='${msg.img}' alt=''>
+                <img class='chat-msg-img' src='${img}' alt=''>
                 <div class='chat-msg-date'>${msg.date}</div>
             </div>
             <div class='chat-msg-content'>
@@ -547,6 +547,8 @@ function buildUser(user){
                     </div>
                 </div>
         </div>`;
+        
+        console.log(r.Image)
         
         return r;
     /*

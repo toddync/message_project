@@ -11,13 +11,14 @@ async function requestHandler(req, ws, chat) {
         case "msg":
             
             response = await message.getMessageArray(ws.userId, req.chat, 50);
-            
+            console.log(chat.Image)
             ws.send(JSON.stringify({
                 act: "response", 
                 ctx: "loadChat", 
                 status: "success",
                 reqId: ws.userId, 
-                chat: chat, 
+                chat: chat.Name,
+                img: chat.Image,
                 msgs: response
             }))
             
@@ -60,9 +61,9 @@ async function messageHandler(msg, from, to, conn){
             act:"recieve",
             ctx:"msg",
             status:"success",
-            msg: req.msg,
-            from: req.user,
-            date: req.msg_date
+            msg: msg.msg,
+            from: msg.user,
+            date: msg.msg_date
         }))
     }
 }
